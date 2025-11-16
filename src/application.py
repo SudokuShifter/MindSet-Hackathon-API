@@ -7,7 +7,7 @@ from loguru import logger
 
 from src.models.config import AppConfig
 from src.routers.default import DefaultRouter
-from src.common.database.postgres import psql as db
+from src.common.database.postgres import Postgres
 
 
 class Application:
