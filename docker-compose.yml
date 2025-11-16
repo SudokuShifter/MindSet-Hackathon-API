@@ -35,7 +35,7 @@ services:
   frontend:
     container_name: frontend
     build:
-      context: ~/home/ui
+      context: ~/ui
     networks:
       - dev
 
