@@ -39,5 +39,4 @@ class DefaultRouter(BaseRouter):
 
         @router.get("/ready")
         async def ready(response: Response) -> dict:
-
             return {"status": "ok"}

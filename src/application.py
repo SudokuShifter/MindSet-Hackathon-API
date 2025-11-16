@@ -9,7 +9,8 @@ from src.models.config import AppConfig
 from src.routers.default import DefaultRouter
 from src.common.database.postgres import psql as db
 
-class Application():
+
+class Application:
     def __init__(
         self,
         config: AppConfig,
@@ -17,17 +18,21 @@ class Application():
     ):
         self._config = config
         self._default = default
-    
+
     def setup(self, server: FastAPI) -> None:
         server.add_middleware(
             CORSMiddleware,
-            allow_origins=['*'],
+            allow_origins=["*"],
             allow_credentials=True,
-            allow_methods=['*'],
-            allow_headers=['*']
+            allow_methods=["*"],
+            allow_headers=["*"],
         )
-        server.include_router(self._default.api_router, prefix=self._default.base_prefix, tags=self._default.tags)
-    
+        server.include_router(
+            self._default.api_router,
+            prefix=self._default.base_prefix,
+            tags=self._default.tags,
+        )
+
     def start_app(self) -> FastAPI:
         @asynccontextmanager
         async def lifespan(server: FastAPI) -> AsyncGenerator[None, None]:
@@ -35,7 +40,7 @@ class Application():
                 # await db.init_db()
                 yield
             finally:
-                logger.warning('Ending ')
+                logger.warning("Ending ")
                 # await db.close()
 
         server = FastAPI(lifespan=lifespan)
