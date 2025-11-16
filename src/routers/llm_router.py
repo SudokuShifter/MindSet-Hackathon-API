@@ -34,7 +34,6 @@ class LLMRouter(BaseRouter):
         return server
 
     def _register(self, router: APIRouter) -> None:
-        
         @router.post("/onboarding_test", status_code=status.HTTP_201_CREATED)
-        def onboarding_test(test_result: list[bool] = Query(..., description = "")):
+        def onboarding_test(test_result: list[bool] = Query(..., description="")):
             return self.llm_service.score_epi(test_result)

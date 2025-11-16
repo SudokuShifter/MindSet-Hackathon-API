@@ -1,8 +1,6 @@
-from fastapi import (
-    APIRouter,
-    Response
-)
+from fastapi import APIRouter, Request, Response
 
+from src.models.forms.auth_forms import LoginForm, RegisterForm
 from src.interfaces.router import BaseRouter
 from src.services.auth_service import AuthService
 
@@ -33,10 +31,14 @@ class AuthRouter(BaseRouter):
         return server
 
     def _register(self, router: APIRouter) -> None:
-        @router.get("/ping")
-        async def ping() -> str:
-            return "pong"
+        @router.post("/register")
+        async def register(register_form: RegisterForm):
+            return await self.auth_service.registration(register_form)
 
-        @router.get("/ready")
-        async def ready(response: Response) -> dict:
-            return {"status": "ok"}
+        @router.post("/login")
+        async def login(login_form: LoginForm):
+            return await self.auth_service.login(login_form)
+
+        @router.post("/logout")
+        async def logout(request: Request):
+            return await self.auth_service.logout(request.headers.get("SessionToken"))

@@ -1,7 +1,4 @@
-from fastapi import (
-    APIRouter,
-    Response
-)
+from fastapi import APIRouter, Response
 
 from src.interfaces.router import BaseRouter
 from src.services.example import ExampleService

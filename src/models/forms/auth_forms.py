@@ -5,22 +5,14 @@ from pydantic import BaseModel, EmailStr, field_validator
 
 
 class LoginForm(BaseModel):
-    username: str = Form()
+    email: EmailStr = Form()
     password: str = Form()
 
 
 class RegisterForm(LoginForm):
-    email: EmailStr = Form()
     first_name: str = Form()
     second_name: str = Form()
     description: str = Form()
-
-
-    @field_validator("username", mode="before")
-    def only_latin_and_numbers(cls, value: str) -> str:
-        if not re.fullmatch(r"[A-Za-z0-9_]+", value):
-            raise ValueError("Value must contain only Latin letters, numbers, and underscores")
-        return value
 
     @field_validator("password", mode="before")
     def validate_password(cls, value: str) -> str:
