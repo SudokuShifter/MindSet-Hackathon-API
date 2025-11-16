@@ -6,13 +6,13 @@ import bcrypt
 
 from src.repositories.user_repository import UserRepository
 from src.models.auth_pyd import UserInput, UserLogin
-from src.models.config import AppConfig
+from src.models.config import JWTConfig
 
 
 class AuthService:
-    def __init__(self, user_repo: UserRepository, app_config: AppConfig):
+    def __init__(self, user_repo: UserRepository, config: JWTConfig):
         self.user_repo = user_repo
-        self.app_config = app_config
+        self.config = config
 
     async def registration(self, user_data: UserInput):
         _id = uuid4()
@@ -47,6 +47,6 @@ class AuthService:
                 "exp": created_at + timedelta(hours=5),
                 "type": "session",
             },
-            key=self.app_config.jwt_config.JWT_PRIVATE_KEY,
+            key=self.config.JWT_PRIVATE_KEY,
             algorithm="EdDSA",
         )

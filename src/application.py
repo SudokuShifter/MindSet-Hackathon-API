@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from loguru import logger
 
+from src.interfaces.router import BaseRouter
 from src.models.config import AppConfig
 from src.routers.default import DefaultRouter
 from src.common.database.postgres import Postgres
@@ -14,10 +15,10 @@ class Application:
     def __init__(
         self,
         config: AppConfig,
-        default: DefaultRouter,
+        routers: list[BaseRouter]
     ):
-        self._config = config
-        self._default = default
+        self.container = container
+        self.routers = routers
 
     def setup(self, server: FastAPI) -> None:
         server.add_middleware(
@@ -27,11 +28,12 @@ class Application:
             allow_methods=["*"],
             allow_headers=["*"],
         )
-        server.include_router(
-            self._default.api_router,
-            prefix=self._default.base_prefix,
-            tags=self._default.tags,
-        )
+        for router in self.routers:
+            server.include_router(
+                router.api_router,
+                prefix=router.base_prefix,
+                tags=router.tags,
+            )
 
     def start_app(self) -> FastAPI:
         @asynccontextmanager
