@@ -30,7 +30,7 @@ class Application:
         server.add_middleware(
             SessionMiddleware,
             auth_service=auth_service,
-            exclude_paths=["/api/v1/register", "/api/v1/login", "/api/v1/test", "/docs", "/openapi.json"],
+            exclude_paths=["/api/v1/register", "/api/v1/login", "/api/v1/test", "/docs", "/openapi.json", "/api/v1/ping", "/api/v1/ready"],
         )
         for router in self.routers:
             server.include_router(
