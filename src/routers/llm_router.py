@@ -37,3 +37,8 @@ class LLMRouter(BaseRouter):
         @router.post("/onboarding_test", status_code=status.HTTP_201_CREATED)
         def onboarding_test(test_result: list[bool] = Query(..., description="")):
             return self.llm_service.score_epi(test_result)
+
+        @router.post("/generate_repport")
+        def generate_weekly_report():
+            pass
+            
