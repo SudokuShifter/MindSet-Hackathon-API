@@ -41,3 +41,5 @@ class Application():
         server = FastAPI(lifespan=lifespan)
         self.setup(server=server)
         return server
+
+        

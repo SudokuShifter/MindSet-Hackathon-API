@@ -1,11 +1,21 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Response
-
+from fastapi import (
+    APIRouter,
+    UploadFile,
+    status,
+    File,
+    HTTPException,
+    Path,
+    Response,
+    Body,
+    Query,
+)
+from typing import List
 from src.common.database.postgres import psql as db
 from src.interfaces.router import BaseRouter
 from src.services.example import ExampleService
-
+from src.services.onbording_test import score_epi
 
 class DefaultRouter(BaseRouter):
     def __init__(
@@ -41,3 +51,7 @@ class DefaultRouter(BaseRouter):
         async def ready(response: Response) -> dict:
 
             return {"status": "ok"}
+        
+        @router.post("/onboarding_test", status_code=status.HTTP_201_CREATED)
+        def onboarding_test(test_result: List[bool] = Query(..., description = "")):
+            return score_epi(test_result)
