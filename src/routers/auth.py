@@ -45,4 +45,5 @@ class AuthRouter(BaseRouter):
         
         @router.post("/test")
         async def test(request: Request, token: str):
+            session_token = request.headers.get("SessionToken")
             return await self.auth_service.decode_token(token)
