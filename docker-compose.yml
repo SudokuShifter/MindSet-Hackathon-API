@@ -18,6 +18,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - dev
 
   api-gateway:
     build:
@@ -25,10 +27,12 @@ services:
       dockerfile: Dockerfile
     env_file:
       - ./.env.docker
+    restart: unless-stopped
     # ports:
     #   - 8000:8000
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - dev
       
@@ -36,11 +40,13 @@ services:
     container_name: frontend
     build:
       context: ~/ui
+    restart: unless-stopped
     networks:
       - dev
 
   nginx:
     image: nginx:stable-alpine
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
