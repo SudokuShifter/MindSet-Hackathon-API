@@ -1,11 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from uuid import uuid4, UUID
 import jwt
 
 import bcrypt
 from loguru import logger
 
-from src.common.errors import BadRequestError
+from src.common.errors import BadRequestError, asyncpg_errors_decorator
 from src.models.forms.auth_forms import RegisterForm
 from src.repositories.user_repository import UserRepository
 from src.models.auth_pyd import UserLogin
@@ -17,9 +17,11 @@ class AuthService:
         self.user_repo = user_repo
         self.config = config
 
+    @asyncpg_errors_decorator
     async def registration(self, user_data: RegisterForm):
         _id = uuid4()
-        creation_date = datetime.now()
+        creation_date_utc = datetime.now(timezone.utc)
+        creation_date_naive = creation_date_utc.replace(tzinfo=None)
         password = bcrypt.hashpw(user_data.password.encode(), bcrypt.gensalt()).decode()
 
         await self.user_repo.create_user(
@@ -29,10 +31,30 @@ class AuthService:
             email=user_data.email,
             password=password,
             description=user_data.description,
-            creation_date=creation_date,
+            creation_date=creation_date_naive,
         )
 
-        return await self._generate_session_token(user_id=_id, created_at=creation_date)
+        return await self.create_session(user_id=_id)
+
+    @asyncpg_errors_decorator
+    async def create_session(self, user_id):
+        session_id = uuid4()
+        created_at_utc = datetime.now(timezone.utc)
+        expire_at_utc = created_at_utc + timedelta(hours=5)
+        token = await self._generate_session_token(user_id, created_at_utc)
+        
+        created_at_naive = created_at_utc.replace(tzinfo=None)
+        expire_at_naive = expire_at_utc.replace(tzinfo=None)
+        
+        await self.user_repo.create_session(
+            _id=session_id,
+            user_id=user_id,
+            session_token=token,
+            created_at=created_at_naive,
+            expire_in=expire_at_naive,
+        )
+        
+        return token
 
     async def login(self, user_data: UserLogin):
         user = await self.user_repo.get_user_by_email(user_data.email)
@@ -40,7 +62,7 @@ class AuthService:
             user_data.password.encode(), user["password"].encode()
         ):
             raise BadRequestError(detail="Wrong username or password")
-        return await self._generate_session_token(user_id=user["id"])
+        return await self.create_session(user_id=user["id"])
 
     async def logout(self, session_token: str):
         return await self.user_repo.delete_token(session_token=session_token)
@@ -57,32 +79,36 @@ class AuthService:
                     token_str,
                     key=self.config.JWT_PUBLIC_KEY,
                     algorithms=["EdDSA"],
+                    options={"verify_signature": True, "verify_exp": True},
                 )
                 return token_str
             except Exception as e:
                 logger.debug(f"Existing token is invalid, creating new one: {e}")
         
-        created_at = created_at or datetime.now()
-        expire_at = created_at + timedelta(hours=5)
+        created_at_utc = created_at or datetime.now(timezone.utc)
+        expire_at_utc = created_at_utc + timedelta(hours=5)
         
         new_token = jwt.encode(
             payload={
                 "sub": str(user_id),
-                "iat": created_at,
-                "exp": expire_at,
+                "iat": created_at_utc,
+                "exp": expire_at_utc,
                 "type": "session",
             },
             key=self.config.JWT_PRIVATE_KEY,
             algorithm="EdDSA",
         )
         
+        created_at_naive = created_at_utc.replace(tzinfo=None)
+        expire_at_naive = expire_at_utc.replace(tzinfo=None)
+        
         session_id = uuid4()
         await self.user_repo.create_session(
             _id=session_id,
             user_id=user_id,
             session_token=new_token,
-            created_at=created_at,
-            expire_in=expire_at,
+            created_at=created_at_naive,
+            expire_in=expire_at_naive,
         )
         
         return new_token
@@ -96,9 +122,18 @@ class AuthService:
                 session_token,
                 key=self.config.JWT_PUBLIC_KEY,
                 algorithms=["EdDSA"],
+                options={"verify_signature": True, "verify_exp": True},
             )
         except Exception as e:
             logger.exception(f"Unauthorized {e}")
             return False
 
         return True
+
+    async def decode_token(self, session_token: str):
+        return jwt.decode(
+            session_token,
+            key=self.config.JWT_PUBLIC_KEY,
+            algorithms=["EdDSA"],
+            options={"verify_signature": True, "verify_exp": True},
+        )
