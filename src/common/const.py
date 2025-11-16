@@ -1,0 +1,19 @@
+from enum import Enum
+
+
+DEFAULT_PUBLIC_JWT_KEY = """
+-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEAmzt34d5Qj5i5T2YfvvpgnHJUAPLJSeEIDt5x4LRtzl0=
+-----END PUBLIC KEY-----
+"""
+
+DEFAULT_PRIVATE_JWT_KEY = """
+-----BEGIN PRIVATE KEY-----
+MC4CAQAwBQYDK2VwBCIEIAyBvuOyXO5PW/EB+xFFV79K8aGWrqhYLNjH71ViIam8
+-----END PRIVATE KEY-----
+"""
+
+
+class ExpireEnum(Enum):
+    ONE_DAY = 86_400
+    TWO_WEEKS = 1_209_600

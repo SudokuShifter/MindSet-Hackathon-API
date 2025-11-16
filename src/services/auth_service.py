@@ -9,7 +9,7 @@ from src.models.auth_pyd import UserInput, UserLogin
 from src.models.config import AppConfig
 
 
-class UserService:
+class AuthService:
     def __init__(self, user_repo: UserRepository, app_config: AppConfig):
         self.user_repo = user_repo
         self.app_config = app_config

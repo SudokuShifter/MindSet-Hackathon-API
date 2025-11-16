@@ -12,3 +12,10 @@ class UserInput(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr = Field(...)
     password: str = Field(...)
+
+
+class JWTRequestPayload(BaseModel):
+    sub: int
+    iat: int
+    exp: int
+    type: str
