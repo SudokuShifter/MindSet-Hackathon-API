@@ -1,12 +1,4 @@
 services:
-  api-gateway:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - ./.env.docker
-    ports:
-      - 8000:8000
 
   db:
     image: postgres:latest
@@ -26,3 +18,37 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env.docker
+    # ports:
+    #   - 8000:8000
+    depends_on:
+      - db
+      
+  frontend:
+    container_name: frontend
+    build:
+      context: ~/home/ui
+    networks:
+      - dev
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - './nginx.conf:/etc/nginx/nginx.conf'
+      - /etc/letsencrypt/live/sixplore.ru/fullchain.pem:/etc/letsencrypt/live/sixplore.ru/fullchain.pem
+      - /etc/letsencrypt/live/sixplore.ru/privkey.pem:/etc/letsencrypt/live/sixplore.ru/privkey.pem
+
+    depends_on:
+      - api-gateway
+      - frontend
+    networks:
+      - dev
