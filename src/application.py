@@ -9,7 +9,6 @@ from loguru import logger
 from src.services.auth_service import AuthService
 from src.interfaces.router import BaseRouter
 from src.common.database.postgres import Postgres
-from src.middlewares.session import SessionMiddleware
 from src.common.container import setup_app_container
 from src.common.security import session_token_header
 
@@ -26,20 +25,6 @@ class Application:
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
-        )
-        auth_service = self.container.get(AuthService)
-        server.add_middleware(
-            SessionMiddleware,
-            auth_service=auth_service,
-            exclude_paths=[
-                "/api/v1/register",
-                "/api/v1/login",
-                "/api/v1/test",
-                "/docs",
-                "/openapi.json",
-                "/api/v1/ping",
-                "/api/v1/ready",
-            ],
         )
         for router in self.routers:
             server.include_router(

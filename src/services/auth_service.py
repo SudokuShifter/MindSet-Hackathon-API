@@ -39,7 +39,7 @@ class AuthService:
     async def create_session(self, user_id):
         session_id = uuid4()
         created_at_utc = datetime.now(timezone.utc)
-        expire_at_utc = created_at_utc + timedelta(hours=5)
+        expire_at_utc = created_at_utc + timedelta(hours=10)
         token = await self._generate_session_token(user_id, created_at_utc)
 
         created_at_naive = created_at_utc.replace(tzinfo=None)
@@ -85,7 +85,7 @@ class AuthService:
                 logger.debug(f"Existing token is invalid, creating new one: {e}")
 
         created_at_utc = created_at or datetime.now(timezone.utc)
-        expire_at_utc = created_at_utc + timedelta(hours=5)
+        expire_at_utc = created_at_utc + timedelta(hours=10)
 
         new_token = jwt.encode(
             payload={

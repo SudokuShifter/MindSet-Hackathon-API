@@ -65,7 +65,7 @@ class LLMService:
         res["interpretation"] = interp
         return res
 
-    def generate_report_llm(self, calendar_dump: list(list(str)), onboarding_test_data):
+    def generate_report_llm(self, calendar_dump: list[list[str]], onboarding_test_data):
         prompt = week_report1 + str(onboarding_test_data) + week_report2
         for row in calendar_dump:
             prompt += str(row) + "\n"

@@ -11,21 +11,16 @@ session_token_header = APIKeyHeader(
     name="SessionToken", description="JWT токен без префикса Bearer"
 )
 
-
 def verify_token(
     session_token: str = Security(session_token_header),
 ) -> JWTRequestPayload:
     try:
         decoded_token: dict = jwt.decode(
-            jwt=session_token,
-            key=app_config.jwt_config.JWT_PUBLIC_KEY,
-            algorithms=["EdDSA"],
-            options={
-                "verify_signature": True,
-            },
-        )
-        print(decoded_token)
-
+                session_token,
+                key=app_config.jwt_config.JWT_PUBLIC_KEY,
+                algorithms=["EdDSA"],
+                options={"verify_signature": True, "verify_exp": True},
+            )
     except jwt.exceptions.PyJWTError as e:
         raise UnauthorizedError(detail=str(e))
 

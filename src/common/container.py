@@ -9,12 +9,16 @@ from src.repositories.example_repository import ExampleRepository
 from src.routers.auth import AuthRouter
 from src.routers.default import DefaultRouter
 from src.routers.llm_router import LLMRouter
+from src.routers.calendar_router import CalendarRouter
 from src.services.example import ExampleService
 from src.models.config import AppConfig
 from src.common.database.postgres import Postgres
 from src.repositories.user_repository import UserRepository
+from src.repositories.calendar_repository import CalendarRepository
+from src.repositories.todo_calendar_repository import TodoCalendarRepository
 from src.services.auth_service import AuthService
 from src.services.llm_service import LLMService
+from src.services.calendar_service import CalendarService
 
 
 class ConfigProvider(Provider):
@@ -48,6 +52,14 @@ class RepositoryProvider(Provider):
     def get_user_repository(self, conn: Postgres) -> UserRepository:
         return UserRepository(conn=conn)
 
+    @provide(scope=Scope.APP)
+    def get_calendar_repository(self, conn: Postgres) -> CalendarRepository:
+        return CalendarRepository(conn=conn)
+
+    @provide(scope=Scope.APP)
+    def get_todo_calendar_repository(self, conn: Postgres) -> TodoCalendarRepository:
+        return TodoCalendarRepository(conn=conn)
+
 
 class ServiceProvider(Provider):
     @provide(scope=Scope.APP)
@@ -63,6 +75,16 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.APP)
     def get_llm_service(self, llm_client: LLMClient) -> LLMService:
         return LLMService(client=llm_client)
+
+    @provide(scope=Scope.APP)
+    def get_calendar_service(
+        self,
+        calendar_repo: CalendarRepository,
+        todo_calendar_repo: TodoCalendarRepository,
+    ) -> CalendarService:
+        return CalendarService(
+            calendar_repo=calendar_repo, todo_calendar_repo=todo_calendar_repo
+        )
 
 
 class RouterProvider(Provider):
@@ -81,13 +103,20 @@ class RouterProvider(Provider):
         return LLMRouter(llm_service=llm_service, base_prefix="/api/v1", tags=["llm"])
 
     @provide(scope=Scope.APP)
+    def get_calendar_router(self, calendar_service: CalendarService) -> CalendarRouter:
+        return CalendarRouter(
+            calendar_service=calendar_service, base_prefix="/api/v1", tags=["calendar"]
+        )
+
+    @provide(scope=Scope.APP)
     def get_all_routers(
         self,
         default_router: DefaultRouter,
         auth_router: AuthRouter,
         llm_router: LLMRouter,
+        calendar_router: CalendarRouter,
     ) -> list[BaseRouter]:
-        return [default_router, auth_router, llm_router]
+        return [default_router, auth_router, llm_router, calendar_router]
 
 
 def create_container() -> Container:
