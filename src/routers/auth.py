@@ -48,7 +48,7 @@ class AuthRouter(BaseRouter):
         async def logout(request: Request):
             return await self.auth_service.logout(request.headers.get("SessionToken"))
 
-        @router.post("/me")
+        @router.get("/me")
         async def me(
             credentials: Annotated[JWTRequestPayload, Depends(verify_token)],
         ):
