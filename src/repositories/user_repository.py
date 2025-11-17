@@ -1,4 +1,5 @@
 from datetime import datetime
+from re import A
 from uuid import UUID
 
 from fastapi import Query
@@ -15,6 +16,26 @@ class UserRepository:
             WHERE id = $1
         """
         return await self._conn.pool.fetchrow(query, _id)
+
+    async def update_user_test(self, user_id: UUID, onboarding_test_id: UUID):
+        query = """
+            UPDATE "User" 
+            SET onboarding_test_id = $1
+            WHERE id = $2
+            RETURNING *
+        """
+        return await self._conn.pool.execute(query, onboarding_test_id, user_id)
+
+    async def create_onboarding_test(
+        self, _id: UUID, result: str, personality_type: str, user_id: UUID
+    ):
+        query = """
+            INSERT INTO "OnboardingTestResult" (id, result, personality_type, user_id)
+            values ($1, $2, $3, $4)
+        """
+        return await self._conn.pool.execute(
+            query, _id, result, personality_type, user_id
+        )
 
     async def create_user(
         self,

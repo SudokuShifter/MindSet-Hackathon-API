@@ -1,5 +1,5 @@
 from typing import Self
-from openai import AsyncOpenAI
+from openai import OpenAI
 from loguru import logger
 
 from src.models.config import AppConfig
@@ -9,7 +9,7 @@ from src.interfaces.client import IBaseClient
 class LLMClient(IBaseClient):
     _instance = None
 
-    def __init__(self, client: AsyncOpenAI, model_name: str) -> None:
+    def __init__(self, client: OpenAI, model_name: str) -> None:
         self.model_name = model_name
         self.client = client
 
@@ -21,7 +21,7 @@ class LLMClient(IBaseClient):
 
     @classmethod
     def _create_client(cls, config: AppConfig) -> Self:
-        client = AsyncOpenAI(api_key=config.LLM_API_KEY, base_url=config.LLM_BASE_URL)
+        client = OpenAI(api_key=config.LLM_API_KEY, base_url=config.LLM_BASE_URL)
         model_name = config.LLM_MODEL_NAME
 
         logger.success("LLM-client succes initialized")

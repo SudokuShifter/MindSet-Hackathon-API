@@ -47,8 +47,8 @@ class CalendarRouter(BaseRouter):
             """
             try:
                 if date != datetime.now().date():
-                    raise BadRequestError(detail="date is not current") 
-                
+                    raise BadRequestError(detail="date is not current")
+
                 return await self.calendar_service.create_calendar(
                     date=date, user_id=credentials.sub
                 )
@@ -174,9 +174,7 @@ class CalendarRouter(BaseRouter):
             Получить все настроения для календарной записи
             """
             try:
-                moods = await self.calendar_service.get_moods_by_calendar(
-                    calendar_id
-                )
+                moods = await self.calendar_service.get_moods_by_calendar(calendar_id)
                 return {"moods": moods}
             except ValueError as e:
                 raise HTTPException(status_code=403, detail=str(e))

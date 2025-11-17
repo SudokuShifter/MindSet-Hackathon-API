@@ -140,3 +140,10 @@ class AuthService:
             algorithms=["EdDSA"],
             options={"verify_signature": True, "verify_exp": True},
         )
+
+    async def create_onboarding_test(self, result: str, user_id: UUID):
+        _id = uuid4()
+        personality_type = "Холерик"
+        return await self.user_repo.create_onboarding_test(
+            _id, result, personality_type
+        )

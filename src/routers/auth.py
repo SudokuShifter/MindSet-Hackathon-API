@@ -52,4 +52,6 @@ class AuthRouter(BaseRouter):
         async def me(
             credentials: Annotated[JWTRequestPayload, Depends(verify_token)],
         ):
-            return await self.auth_service.get_info_about_user(_id=UUID(credentials.sub))
+            return await self.auth_service.get_info_about_user(
+                _id=UUID(credentials.sub)
+            )

@@ -7,7 +7,7 @@ from src.common.prompts import *
 
 class LLMService:
     def __init__(self, client: LLMClient):
-        self.client = client
+        self.client = client.client
 
     def _score_scale(self, responses: list[bool], keys: list[int]) -> int:
         """Считает баллы по одной шкале.
@@ -63,6 +63,7 @@ class LLMService:
         )
 
         res["interpretation"] = interp
+
         return res
 
     def generate_report_llm(self, calendar_dump: list[list[str]], onboarding_test_data):
