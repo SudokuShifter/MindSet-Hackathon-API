@@ -12,7 +12,6 @@ class LoginForm(BaseModel):
 class RegisterForm(LoginForm):
     first_name: str = Form()
     second_name: str = Form()
-    description: str = Form()
 
     @field_validator("password", mode="before")
     def validate_password(cls, value: str) -> str:

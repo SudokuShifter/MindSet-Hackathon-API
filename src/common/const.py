@@ -66,8 +66,3 @@ N_KEYS = [
     57,
 ]
 L_KEYS = [6, -12, -18, 24, -30, 36, -42, -48, -54]
-
-
-class ExpireEnum(Enum):
-    ONE_DAY = 86_400
-    TWO_WEEKS = 1_209_600

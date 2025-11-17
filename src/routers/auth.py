@@ -1,8 +1,12 @@
-from fastapi import APIRouter, Request, Response
+from typing import Annotated
+from fastapi import APIRouter, Depends, Request
+
 
 from src.models.forms.auth_forms import LoginForm, RegisterForm
+from src.models.auth_pyd import JWTRequestPayload
 from src.interfaces.router import BaseRouter
 from src.services.auth_service import AuthService
+from src.common.security import verify_token
 
 
 class AuthRouter(BaseRouter):
@@ -42,8 +46,9 @@ class AuthRouter(BaseRouter):
         @router.post("/logout")
         async def logout(request: Request):
             return await self.auth_service.logout(request.headers.get("SessionToken"))
-        
+
         @router.post("/test")
-        async def test(request: Request, token: str):
-            session_token = request.headers.get("SessionToken")
-            return await self.auth_service.decode_token(token)
+        async def test(
+            credentials: Annotated[JWTRequestPayload, Depends(verify_token)],
+        ):
+            return credentials

@@ -5,6 +5,7 @@ from asyncpg.exceptions import (
     NotNullViolationError,
     ForeignKeyViolationError,
     UniqueViolationError,
+    InvalidColumnReferenceError,
 )
 
 
@@ -42,8 +43,10 @@ def asyncpg_errors_decorator(func):
         except ForeignKeyViolationError as e:
             raise NotFoundError(detail=f"Object not found: {e}")
         except UniqueViolationError as e:
-            raise BadRequestError(
-                detail=f"Object with property relation already exist: {e}"
-            )
+            raise BadRequestError(detail=f"Object with relation already exist: {e}")
+        # except InvalidColumnReferenceError as e:
+        #     raise BadRequestError(
+        #         detail=f"Object with relation already exist: {e}"
+        #     )
 
     return inner

@@ -15,7 +15,7 @@ class UserLogin(BaseModel):
 
 
 class JWTRequestPayload(BaseModel):
-    sub: int
+    sub: str
     iat: int
     exp: int
     type: str

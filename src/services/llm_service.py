@@ -1,9 +1,13 @@
+import json
+
+from src.clients.llm_client import LLMClient
 from src.common.const import E_KEYS, N_KEYS, L_KEYS
+from src.common.prompts import *
 
 
 class LLMService:
-    def __init__(self):
-        pass
+    def __init__(self, client: LLMClient):
+        self.client = client
 
     def _score_scale(self, responses: list[bool], keys: list[int]) -> int:
         """Считает баллы по одной шкале.
@@ -60,3 +64,54 @@ class LLMService:
 
         res["interpretation"] = interp
         return res
+
+    def generate_report_llm(self, calendar_dump: list(list(str)), onboarding_test_data):
+        prompt = week_report1 + str(onboarding_test_data) + week_report2
+        for row in calendar_dump:
+            prompt += str(row) + "\n"
+
+        completion = self.client.chat.completions.create(
+            model="tngtech/deepseek-r1t2-chimera:free",
+            messages=[{"role": "user", "content": prompt}],
+        )
+
+        res = completion.choices[0].message.content
+        schedule = json.loads(
+            res[res.rfind("```json") + 7 : res.rfind("```")]
+        )  # расписание, которое надо записать в дб. Будет списком списков.
+        return res  # возращаем фулл текст для ui. Мб вырезаем расписанием мб оставляем, пока оставляем.
+
+    def generate_responce_one_time(self, user_prompt):
+        completion = self.client.chat.completions.create(
+            model="tngtech/deepseek-r1t2-chimera:free",
+            messages=[
+                {"role": "system", "content": security_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+
+        res = completion.choices[0].message.content
+        if res.rfind("```json") != -1:
+            res = json.loads(res[res.rfind("```json") + 7 : res.rfind("```")])
+        else:
+            res = json.loads(res)
+        if res == "IRRELEVANT":
+            return "Вы задали нерелевантный запрос. Опишите свое эмоциональное состояние, если хотите получить помощь. "
+        elif res == "CRITICAL":
+            return "Обратитесь с этой проблемой к специалисту."
+
+        completion = self.client.chat.completions.create(
+            model="tngtech/deepseek-r1t2-chimera:free",
+            messages=[
+                {"role": "system", "content": one_time_help},
+                {"role": "user", "content": user_prompt},
+            ],
+        )
+        return completion.choices[0].message.content
+
+    def generate_cookie(self):
+        completion = self.client.chat.completions.create(
+            model="tngtech/deepseek-r1t2-chimera:free",
+            messages=[{"role": "user", "content": cookie_promt}],
+        )
+        return completion.choices[0].message.content

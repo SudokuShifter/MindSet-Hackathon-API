@@ -13,9 +13,16 @@ class JWTConfig(BaseModel):
     JWT_PRIVATE_KEY: str = Field(default=DEFAULT_PRIVATE_JWT_KEY)
 
 
+class LLMConfig(BaseModel):
+    LLM_BASE_URL: str = Field(...)
+    LLM_MODEL_NAME: str = Field(...)
+    LLM_API_KEY: str = Field(default="")
+
+
 class AppConfig(BaseModel):
     db_config: DBConfig
     jwt_config: JWTConfig
+    llm_config: LLMConfig
 
     @classmethod
     def create(cls):
@@ -23,5 +30,8 @@ class AppConfig(BaseModel):
 
         db_config = DBConfig(**envs)
         jwt_config = JWTConfig(**envs)
+        llm_config = LLMConfig(**envs)
 
-        return AppConfig(db_config=db_config, jwt_config=jwt_config)
+        return AppConfig(
+            db_config=db_config, jwt_config=jwt_config, llm_config=llm_config
+        )

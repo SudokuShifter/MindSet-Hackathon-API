@@ -3,6 +3,7 @@ from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 
 from src.clients.base_client import BaseClient
+from src.clients.llm_client import LLMClient
 from src.interfaces.router import BaseRouter
 from src.repositories.example_repository import ExampleRepository
 from src.routers.auth import AuthRouter
@@ -26,6 +27,10 @@ class ClientProvider(Provider):
     @provide(scope=Scope.APP)
     def get_base_client(self) -> BaseClient:
         return BaseClient(base_url="https://google.com")
+
+    @provide(scope=Scope.APP)
+    def get_llm_client(self, config: AppConfig) -> LLMClient:
+        return LLMClient._create_client(config=config.llm_config)
 
 
 class DatabaseProvider(Provider):
@@ -56,8 +61,8 @@ class ServiceProvider(Provider):
         return AuthService(user_repo=repo, config=config.jwt_config)
 
     @provide(scope=Scope.APP)
-    def get_llm_service(self) -> LLMService:
-        return LLMService()
+    def get_llm_service(self, llm_client: LLMClient) -> LLMService:
+        return LLMService(client=llm_client)
 
 
 class RouterProvider(Provider):

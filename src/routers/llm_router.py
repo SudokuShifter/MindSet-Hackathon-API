@@ -41,7 +41,8 @@ class LLMRouter(BaseRouter):
         @router.post("/generate_repport")
         def generate_weekly_report():
             from src.repositories.llm_repository import LLMRepository
+
             calendar_dump = LLMRepository.get_data_for_weekly_report()
-            from src.routers.llm_all import generate_report_llm # to do
+            from src.routers.llm_all import generate_report_llm  # to do
+
             pass
-            

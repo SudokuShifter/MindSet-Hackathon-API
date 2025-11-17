@@ -16,13 +16,11 @@ class UserRepository:
         second_name: str,
         email: str,
         password: str,
-        description: str,
         creation_date: datetime,
-        personality_type: str | None = None,
     ):
         query = """
-            INSERT INTO "User" (id, first_name, second_name, email, password, description, personality_type, created_at)
-            values ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
+            INSERT INTO "User" (id, first_name, second_name, email, password, created_at)
+            values ($1, $2, $3, $4, $5, $6) RETURNING *
         """
         return await self._conn.pool.execute(
             query,
@@ -31,8 +29,6 @@ class UserRepository:
             second_name,
             email,
             password,
-            description,
-            personality_type,
             creation_date,
         )
 
@@ -51,19 +47,25 @@ class UserRepository:
         created_at: datetime,
         expire_in: datetime,
     ):
-        query = """
-            INSERT INTO "Session" (id, user_id, session_token, created_at, expire_in)
-            VALUES ($1, $2, $3, $4, $5)
-            ON CONFLICT (user_id) 
-            DO UPDATE SET 
-                id = EXCLUDED.id,
-                session_token = EXCLUDED.session_token,
-                created_at = EXCLUDED.created_at,
-                expire_in = EXCLUDED.expire_in
-        """
-        return await self._conn.pool.execute(
-            query, _id, user_id, session_token, created_at, expire_in
-        )
+        async with self._conn.pool.acquire() as connection:
+            async with connection.transaction():
+                # Удаляем старую сессию
+                await connection.execute(
+                    'DELETE FROM "Session" WHERE user_id = $1', user_id
+                )
+                # Создаем новую сессию
+                return await connection.fetchrow(
+                    """
+                    INSERT INTO "Session" (id, user_id, session_token, created_at, expire_in)
+                    VALUES ($1, $2, $3, $4, $5)
+                    RETURNING *
+                    """,
+                    _id,
+                    user_id,
+                    session_token,
+                    created_at,
+                    expire_in,
+                )
 
     async def get_session(self, session_token: str):
         query = """
@@ -71,7 +73,7 @@ class UserRepository:
             WHERE s.session_token = $1
         """
         return await self._conn.pool.fetchrow(query, session_token)
-    
+
     async def get_session_by_user_id(self, user_id: UUID):
         query = """
             SELECT s.session_token FROM "Session" as s

@@ -30,7 +30,6 @@ class AuthService:
             second_name=user_data.second_name,
             email=user_data.email,
             password=password,
-            description=user_data.description,
             creation_date=creation_date_naive,
         )
 
@@ -42,10 +41,10 @@ class AuthService:
         created_at_utc = datetime.now(timezone.utc)
         expire_at_utc = created_at_utc + timedelta(hours=5)
         token = await self._generate_session_token(user_id, created_at_utc)
-        
+
         created_at_naive = created_at_utc.replace(tzinfo=None)
         expire_at_naive = expire_at_utc.replace(tzinfo=None)
-        
+
         await self.user_repo.create_session(
             _id=session_id,
             user_id=user_id,
@@ -53,7 +52,7 @@ class AuthService:
             created_at=created_at_naive,
             expire_in=expire_at_naive,
         )
-        
+
         return token
 
     async def login(self, user_data: UserLogin):
@@ -71,7 +70,7 @@ class AuthService:
         self, user_id: UUID, created_at: datetime | None = None
     ) -> str:
         existed_session = await self.user_repo.get_session_by_user_id(user_id)
-        
+
         if existed_session and existed_session.get("session_token"):
             token_str = existed_session["session_token"]
             try:
@@ -84,10 +83,10 @@ class AuthService:
                 return token_str
             except Exception as e:
                 logger.debug(f"Existing token is invalid, creating new one: {e}")
-        
+
         created_at_utc = created_at or datetime.now(timezone.utc)
         expire_at_utc = created_at_utc + timedelta(hours=5)
-        
+
         new_token = jwt.encode(
             payload={
                 "sub": str(user_id),
@@ -98,10 +97,10 @@ class AuthService:
             key=self.config.JWT_PRIVATE_KEY,
             algorithm="EdDSA",
         )
-        
+
         created_at_naive = created_at_utc.replace(tzinfo=None)
         expire_at_naive = expire_at_utc.replace(tzinfo=None)
-        
+
         session_id = uuid4()
         await self.user_repo.create_session(
             _id=session_id,
@@ -110,7 +109,7 @@ class AuthService:
             created_at=created_at_naive,
             expire_in=expire_at_naive,
         )
-        
+
         return new_token
 
     async def check_auth(self, session_token: str):
