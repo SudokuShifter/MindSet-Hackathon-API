@@ -1,6 +1,7 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Request
+from uuid import UUID
 
+from fastapi import APIRouter, Depends, Request
 
 from src.models.forms.auth_forms import LoginForm, RegisterForm
 from src.models.auth_pyd import JWTRequestPayload
@@ -47,8 +48,8 @@ class AuthRouter(BaseRouter):
         async def logout(request: Request):
             return await self.auth_service.logout(request.headers.get("SessionToken"))
 
-        @router.post("/test")
-        async def test(
+        @router.post("/me")
+        async def me(
             credentials: Annotated[JWTRequestPayload, Depends(verify_token)],
         ):
-            return credentials
+            return await self.auth_service.get_info_about_user(_id=UUID(credentials.sub))

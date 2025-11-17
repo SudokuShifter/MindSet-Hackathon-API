@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from re import A
 from uuid import uuid4, UUID
 import jwt
 
@@ -16,6 +17,9 @@ class AuthService:
     def __init__(self, user_repo: UserRepository, config: JWTConfig):
         self.user_repo = user_repo
         self.config = config
+
+    async def get_info_about_user(self, _id: UUID):
+        return await self.user_repo.get_user_data_by_id(_id)
 
     @asyncpg_errors_decorator
     async def registration(self, user_data: RegisterForm):

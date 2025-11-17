@@ -9,6 +9,13 @@ class UserRepository:
     def __init__(self, conn: Postgres):
         self._conn = conn
 
+    async def get_user_data_by_id(self, _id: UUID):
+        query = """
+            SELECT u.id, u.first_name, u.second_name, u.email, u.test_id, u.created_at  FROM "User" as u
+            WHERE id = $1
+        """
+        return await self._conn.pool.fetchrow(query, _id)
+
     async def create_user(
         self,
         _id: UUID,
