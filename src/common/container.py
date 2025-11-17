@@ -99,8 +99,8 @@ class RouterProvider(Provider):
         return AuthRouter(auth_service=service, base_prefix="/api/v1", tags=["auth"])
 
     @provide(scope=Scope.APP)
-    def get_llm_router(self, llm_service: LLMService) -> LLMRouter:
-        return LLMRouter(llm_service=llm_service, base_prefix="/api/v1", tags=["llm"])
+    def get_llm_router(self, llm_service: LLMService, auth_service: AuthService) -> LLMRouter:
+        return LLMRouter(llm_service=llm_service, auth_service=auth_service, base_prefix="/api/v1", tags=["llm"])
 
     @provide(scope=Scope.APP)
     def get_calendar_router(self, calendar_service: CalendarService) -> CalendarRouter:
